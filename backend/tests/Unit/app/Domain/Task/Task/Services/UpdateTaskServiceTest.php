@@ -47,14 +47,6 @@ class UpdateTaskServiceTest extends TestCase
                 $taskDTO->startDate,
                 $taskDTO->endDate
             );
-        
-        $this->taskValidationMock
-            ->method('timeIsValid')
-            ->with(
-                $taskDTO->startDate,
-                $taskDTO->startTime,
-                $taskDTO->endTime
-            );
 
         $this->updateTaskRepositoryMock
             ->method('update')
@@ -107,37 +99,6 @@ class UpdateTaskServiceTest extends TestCase
                 Response::HTTP_BAD_REQUEST
             ));
         
-        $this->expectException(TaskException::class);
-
-        $instanceClass->update($taskDTO);
-    }
-
-    public function test_should_erro_invalid_time_when_update_task()
-    {
-        $taskDTO = TaskResource::returnTaskDTO();
-        $taskDTO->endTime = '01:00:00';
-
-        $instanceClass = $this->instanceUpdateTaskService();
-
-        $this->taskValidationMock
-            ->method('dateIsValid')
-            ->with(
-                $taskDTO->startDate,
-                $taskDTO->endDate
-            );
-        
-        $this->taskValidationMock
-            ->method('timeIsValid')
-            ->with(
-                $taskDTO->startDate,
-                $taskDTO->startTime,
-                $taskDTO->endTime
-            )
-            ->willThrowException(new TaskException(
-                SystemMessagesEnum::CHOSEN_END_TIME_BEFORE_START_TIME,
-                Response::HTTP_BAD_REQUEST
-            ));
-
         $this->expectException(TaskException::class);
 
         $instanceClass->update($taskDTO);

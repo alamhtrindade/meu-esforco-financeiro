@@ -45,7 +45,11 @@ https://api-tarefeiro.docker.dev/status
 }
 ```
 
-Execute a criação das tabelas:
+---
+
+### Criando a Base de Dados
+
+**Execute a criação das tabelas:**
 
 ```bash
 sh dev artisan migrate
@@ -56,6 +60,15 @@ Verifique a criação da estrutura:
 
 ```bash
 sh dev artisan migrate:status
+```
+
+---
+
+### Testes unitários
+
+Para executar os testes unitários:
+```bash
+sh dev artisan test
 ```
 
 ---
