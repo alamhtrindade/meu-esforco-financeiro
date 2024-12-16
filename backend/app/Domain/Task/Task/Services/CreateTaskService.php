@@ -35,11 +35,5 @@ class CreateTaskService  implements CreateTaskServiceInterface
             $taskDTO->startDate,
             $taskDTO->endDate
         );
-
-        $this->taskValidation->timeIsValid(
-            $taskDTO->startDate,
-            $taskDTO->startTime,
-            $taskDTO->endTime
-        );
     }
 }

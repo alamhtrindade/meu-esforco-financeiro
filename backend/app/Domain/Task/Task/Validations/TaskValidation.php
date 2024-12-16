@@ -26,19 +26,6 @@ class TaskValidation
 
     }
 
-    public function timeIsValid(
-        string $startDate,
-        string $startTime,
-        string $endTime
-    ): void
-    {
-        $start = Carbon::createFromFormat('Y/m/d H:i:s', "$startDate $startTime");
-        $end = Carbon::createFromFormat('Y/m/d H:i:s', "$startDate $endTime");
-        $now = Carbon::now();
-
-        $this->verifyTimeIsAfterNow($start, $end, $now);
-    }
-    
     public function normalizeTaskToCreate(
         TaskDTO $taskDTO
     ): TaskDTO
@@ -71,27 +58,6 @@ class TaskValidation
         if ($end->isBefore($start)) {
             throw new TaskException(
                 SystemMessagesEnum::END_IS_BEFOR_START,
-                Response::HTTP_BAD_REQUEST
-            );
-        }
-    }
-
-    private static function verifyTimeIsAfterNow(
-        Carbon $start,
-        Carbon $end,
-        Carbon $now
-    ): void
-    {
-        if ($start->isSameDay($now) && $start->isBefore($now)) {
-            throw new TaskException(
-                SystemMessagesEnum::CHOSEN_TIME_BEFORE_NOW,
-                Response::HTTP_BAD_REQUEST
-            );
-        }
-
-        if ($end->isBefore($start)) {
-            throw new TaskException(
-                SystemMessagesEnum::CHOSEN_END_TIME_BEFORE_START_TIME,
                 Response::HTTP_BAD_REQUEST
             );
         }

@@ -152,6 +152,7 @@ start_dev () {
     $NPM run serve
 }
 
+
 check_env_exists () {
     if [ ! -f "$APP_ENV_FILE" ]; then
         echo "$ICON Criando arquivo de configuração $APP_ENV_FILE..."
@@ -189,4 +190,3 @@ if [ $# -gt 0 ]; then
 else
     show_commands
 fi
-
