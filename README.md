@@ -50,4 +50,20 @@ Antes de subir a aplicação, leve em consideração as seguintes orientações:
 
 ---
 
+### ** POSSÍVEL ERRO DE CERTIFICADO**
+- Caso receba um aviso de certificado inválido no navegador ao acessar a aplicação:
+Na pasta backend execute:
+
+```bash
+sudo apt install libnss3-tools
+curl -JLO https://dl.filippo.io/mkcert/latest?for=linux/amd64
+chmod +x mkcert-v*-linux-amd64
+sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert
+mkcert -install
+```
+Faça o build novamente.
+Suba os contêineres novamente
+
+---
+
 Se precisar de suporte adicional, não hesite em entrar em contato.
