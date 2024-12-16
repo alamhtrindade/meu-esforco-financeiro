@@ -27,6 +27,7 @@ Na raiz do projeto, execute os comandos abaixo:
 
 ```bash
 sh dev build
+sh dev npm install
 sh dev start-dev
 ```
 

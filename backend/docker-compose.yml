@@ -82,6 +82,7 @@ services:
       - 80:80
       - 443:443
     volumes:
+      - ./certs:/certs 
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # Map the static conf into the container
       - ./docker/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
@@ -93,3 +94,10 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`api-tarefeiro.docker.dev`)"
       - "traefik.http.services.api.loadbalancer.server.port=9000"
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.web-secure.address=:443
+      - --certificatesresolvers.localcerts.acme.tlschallenge=true
+      - --certificatesresolvers.localcerts.acme.storage=/acme.json
+      - --entrypoints.web-secure.http.tls.certificates[0].certFile=/certs/app-tarefeiro.docker.dev.pem
+      - --entrypoints.web-secure.http.tls.certificates[0].keyFile=/certs/app-tarefeiro.docker.dev-key.pem

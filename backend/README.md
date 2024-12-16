@@ -23,15 +23,30 @@ Antes de iniciar, configure o arquivo de hosts do seu sistema para registrar a U
    127.0.0.1       api-tarefeiro.docker.dev
    ```
 
+### Arquivo .env
+Copie para o arquivo .env as configurações do .env.example e
+adicione as configurações de banco:
+
+
+***CONEXAO BANCO***
+DB_CONNECTION=pgsql
+DB_HOST=postgresql10
+DB_PORT=5432
+DB_DATABASE=tarefeiro_database_local
+DB_USERNAME=postgresql
+DB_PASSWORD=ABC1de2FG3H
+
+---
+
 ### Subindo a Aplicação
-Na raiz do projeto, execute os comandos abaixo:
+Na raiz do backend, execute os comandos abaixo:
 
 ```bash
 sh dev build
 sh dev start-dev
 ```
 
-Verifique se o serviço está ativo acessando o endpoint de status:
+Verifique se o serviço está ativo acessando o endpoint de status através do postman/insomia:
 
 ```
 https://api-tarefeiro.docker.dev/status
