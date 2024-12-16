@@ -1,0 +1,161 @@
+pipeline {
+    environment {
+        approversPRD = credentials('cetecdev-prd-pipeline-approvers')
+        approveTimeoutSeconds = "600"
+        // Ajustar variavel abaixo conforme nome criado no projeto no OKD HML
+        prj_name = """${JOB_NAME.split('/')[0]}"""
+        //apl_name = "app"
+        apl_name = """${JOB_NAME.minus(JOB_NAME.split('/')[0] + '/' + JOB_NAME.split('/')[0] + '-')}"""
+        registryPRD = "registry.fiesc.com.br/${prj_name}/${apl_name}"
+        registryCredentialPRD = 'registry-prd'
+        image_name = "${env.prj_name}/${env.apl_name}:test"
+        scannerHome = tool 'SonarQube Scanner'
+        sonarToken = credentials('cetecdev-sonar-token')
+
+        imageRepository = "docker-registry.default.svc:5000/${prj_name}/${apl_name}:PRD"
+
+        okdPrdApiHost = 'master-okd.fiesc.com.br'
+        okdPrdTokenBearer = credentials('saudemental-prd-job-sql-token')
+    }
+    agent any
+    stages {
+        stage("Build Dockerfile ") {
+            steps {
+                dir("${env.WORKSPACE}/${env.SOURCE_REPOSITORY_CONTEXT_DIR}") {
+                    sh "docker build -f docker/php/test/Dockerfile -t "+image_name+" ."
+                }
+            }
+        }
+        stage("Composer Install ") {
+            steps {
+                dir("${env.WORKSPACE}/${env.SOURCE_REPOSITORY_CONTEXT_DIR}") {
+                    sh "docker run --rm --user \$(id -u):\$(id -g) --volume \$PWD/:/app -w /app "+image_name+" composer install --ignore-platform-reqs"
+                }
+            }
+        }
+        stage("Generate Coverage ") {
+            steps {
+                script {
+                    try {
+                        dir("${env.WORKSPACE}/${env.SOURCE_REPOSITORY_CONTEXT_DIR}") {
+                            sh "docker run --rm --user \$(id -u):\$(id -g) --volume \$PWD/:/app -w /app "+image_name+" vendor/bin/phpunit --coverage-clover=tests/coverage.xml"
+                        }
+                    } catch (err) {
+                        currentBuild.result = "SUCCESS"
+                    } finally {
+                        sh "ls ./tests/"
+                        sh "sed -i s#/app/app#\$PWD/app#g ./tests/coverage.xml"
+                    }
+                }
+            }
+        }
+        stage('Build and deploy to PRD with approve') {
+            steps {
+                script {
+                    def userInput = false
+                    try {
+                        timeout(time: "${env.approveTimeoutSeconds}", unit: 'SECONDS') {
+                            userInput = input(id: 'Proceed1', message: 'Promote build to PRD?', submitter: "${approversPRD}", parameters: [[$class: 'BooleanParameterDefinition', defaultValue: true, description: '', name: 'Please confirm you agree with this']])
+                        }
+                    }
+                    catch(err){
+                        currentBuild.result = 'SUCCESS'
+                    }
+                    echo 'userInput: ' + userInput
+                    if(userInput == true) {
+                        echo "Build PHP PRD image"
+                        dir("${env.WORKSPACE}/${env.SOURCE_REPOSITORY_CONTEXT_DIR}") {
+                            sh "docker build -f docker/php/Dockerfile --build-arg BUILD_APP_ENV='${BUILD_APP_ENV}' -t ${registryPRD}:PRD . "
+                        }
+                        echo "Build Nginx PRD image"
+                        dir("${env.WORKSPACE}/${env.SOURCE_REPOSITORY_CONTEXT_DIR}") {
+                            sh "docker build -f docker/nginx/Dockerfile -t ${registryPRD}-nginx:PRD . "
+                        }
+                        echo "Publish Nginx PRD image"
+                        docker.withRegistry('https://registry.fiesc.com.br', registryCredentialPRD) {
+                            // A project with the same name must exist on OKD PR
+                            sh "docker push ${registryPRD}-nginx:PRD"
+                        }
+                        echo "Publish PHP PRD image"
+                        docker.withRegistry('https://registry.fiesc.com.br', registryCredentialPRD) {
+                            // A project with the same name must exist on OKD PR
+                            sh "docker push ${registryPRD}:PRD"
+                        }
+                    } else {
+                        echo "Promote was aborted."
+                    }
+                }
+            }
+        }
+        stage('Apply Migrations') {
+            steps {
+                script {
+                    jobMigrationName = "prd-app-migration"
+                    echo "Drop job"
+                    jsondc  = "{\"propagationPolicy\":\"Foreground\"}"
+                    sh("curl -sSk \
+                        -X DELETE \
+                        -d '${jsondc}' \
+                        -H 'Authorization: Bearer ${okdPrdTokenBearer}' \
+                        -H 'Accept: application/json' \
+                        -H 'Content-Type: application/json' \
+                        https://${okdPrdApiHost}/apis/batch/v1/namespaces/${prj_name}/jobs/${jobMigrationName}")
+
+
+                    echo "Create job"
+                    sleep(1)
+                    jsondc  = getJobCreationJson(jobMigrationName, "php artisan migrate --force")
+                    sh("curl -sSk \
+                        -X POST \
+                        -d '${jsondc}' \
+                        -H 'Authorization: Bearer ${okdPrdTokenBearer}' \
+                        -H 'Accept: application/json' \
+                        -H 'Content-Type: application/json' \
+                        https://${okdPrdApiHost}/apis/batch/v1/namespaces/${prj_name}/jobs")
+                }
+            }
+        }
+    }
+}
+
+def getJobCreationJson(String jobName, String jobCommand) {
+    return """
+        {
+            "kind": "Job",
+            "apiVersion": "batch/v1",
+            "metadata": {
+                "name": "${jobName}",
+                "namespace": "${prj_name}"
+            },
+            "spec": {
+                "backoffLimit": "1",
+                "template": {
+                    "spec": {
+                        "containers": [{
+                            "name": "${jobName}",
+                            "image": "${imageRepository}",
+                            "command": [
+                                "sh", "-c", "${jobCommand}"
+                            ],
+                            "imagePullPolicy": "Always",
+                            "envFrom": [
+                                {"configMapRef": {"name": "prd-api-env"}}, {"secretRef": {"name": "prd-api-env"}}
+                            ],
+                            "resources": {
+                                "limits": {
+                                    "cpu": "500m",
+                                    "memory": "512Mi"
+                                },
+                                "requests": {
+                                    "cpu": "200m",
+                                    "memory": "256Mi"
+                                }
+                            }
+                        }],
+                        "restartPolicy": "Never"
+                    }
+                }
+            }
+        }
+    """
+}

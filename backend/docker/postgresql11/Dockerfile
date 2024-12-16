@@ -1,0 +1,12 @@
+FROM postgres:11.18-bullseye
+
+RUN apt-get update && \
+        apt-get install postgresql-11-hypopg
+
+# Variables needed at runtime to configure postgres and run the initdb scripts
+ENV POSTGRES_DB 'postgres'
+ENV POSTGRES_USER 'postgres'
+ENV POSTGRES_PASSWORD 'postgres'
+
+# Copy in the load-extensions script
+COPY load-extensions.sh /docker-entrypoint-initdb.d/
