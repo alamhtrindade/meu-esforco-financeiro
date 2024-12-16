@@ -1,0 +1,192 @@
+#!/usr/bin/env bash
+export USERID="$(id -u)"
+
+ARTISAN="docker-compose exec api php artisan"
+COMPOSER="docker-compose exec api composer"
+NPM="docker-compose exec app-dev npm"
+APP_ENV_FILE=".env"
+APP_ENV_FILE_EXAMPLE=".env.example"
+ICON="🤖"
+
+project_dir=$(pwd)
+
+show_commands () {
+    echo
+    echo "$ICON Comandos disponíveis:"
+    echo
+	echo "sh dev build             - (Re)Builda as imagens dos containers"
+	echo "sh dev start-dev         - Inicia os containers em modo Dev"
+	echo "sh dev status            - Exibe o status dos containers"
+	echo "sh dev redis-clean       - Apaga os dados do Redis"
+	echo "sh dev stop              - Desliga os containers"
+	echo "sh dev logs NOME         - Exibe e acompanha os logs do container"
+	echo "sh dev artisan COMANDO   - Executa os comandos do Artisan"
+	echo "sh dev composer COMANDO  - Executa os comandos do Composer"
+	echo "sh dev npm COMANDO       - Executa os comandos do NPM"
+	echo "sh dev test              - Executa os testes da aplicação (PHPUnit)"
+    echo
+}
+
+compose_build () {
+    echo
+    echo "$ICON Buildando as imagens..."
+    echo
+    check_env_exists
+    docker-compose build
+}
+
+compose_up_dev () {
+    echo
+    echo "$ICON Iniciando os containers em modo Dev..."
+    echo
+    check_env_exists
+    docker-compose up -d app-dev
+}
+
+execute_composer_install () {
+    echo
+    echo "$ICON Instalando dependências PHP (vendor)..."
+    echo
+    $COMPOSER install
+}
+
+execute_npm_install () {
+    echo
+    echo "$ICON Instalando dependências Js (node_modules)..."
+    echo
+    $NPM install
+}
+
+compose_status () {
+    echo
+	echo "$ICON Exibindo o status dos containers..."
+    echo
+	docker-compose ps
+}
+
+compose_down () {
+    echo
+	echo "$ICON Parando os containers..."
+    echo
+	docker-compose down
+}
+
+compose_logs () {
+    shift 1
+
+    if [ $# -gt 0 ]; then
+        echo
+        echo "$ICON Exibindo logs do container $@"
+        echo
+	    docker-compose logs -f $@
+    else
+        echo
+	    echo "$ICON Exibindo logs de todos os containers"
+        echo
+	    docker-compose logs -f
+    fi
+}
+
+check_api_is_up () {
+    if ! docker-compose ps | grep -F -q "api"; then
+        echo
+        echo "$ICON Você precisa iniciar os containers da aplicação!"
+        echo "$ICON Comandos: sh dev start-dev"
+        echo
+        exit 1
+    fi
+}
+
+check_app_is_up () {
+    if ! docker-compose ps | grep -F -q "app-dev"; then
+        echo
+        echo "$ICON Você precisa iniciar os containers da aplicação!"
+        echo "$ICON Comandos: sh dev start-dev"
+        echo
+        exit 1
+    fi
+}
+
+execute_artisan () {
+    check_api_is_up
+    echo
+    echo "$ICON Executando Artisan..."
+    echo
+    shift 1
+    $ARTISAN $@
+}
+
+execute_composer () {
+    check_api_is_up
+    echo
+    echo "$ICON Executando Composer..."
+    echo
+    shift 1
+    $COMPOSER $@
+}
+
+execute_npm () {
+    check_app_is_up
+    echo
+    echo "$ICON Executando NPM..."
+    echo
+    shift 1
+    $NPM $@
+}
+
+execute_tests () {
+    check_api_is_up
+    echo
+    echo "$ICON Executando testes..."
+    echo
+    docker-compose exec api ./vendor/bin/phpunit --colors --coverage-text=tests/coverage.txt --coverage-html=tests/coverage/
+    xdg-open api/tests/coverage/index.html
+}
+
+start_dev () {
+    compose_down
+    compose_up_dev
+    echo
+    echo "$ICON Iniciando aplicação em modo Dev"
+    echo
+    $NPM run serve
+}
+
+check_env_exists () {
+    if [ ! -f "$APP_ENV_FILE" ]; then
+        echo "$ICON Criando arquivo de configuração $APP_ENV_FILE..."
+        cp $APP_ENV_FILE_EXAMPLE $APP_ENV_FILE
+        echo
+    fi
+}
+
+redis_clean () {
+    echo
+    echo "$ICON Limpando dados do Redis"
+    echo
+    export $(cat $API_ENV_FILE | grep REDIS_PASSWORD)
+    $REDIS redis-cli -a $REDIS_PASSWORD flushall
+}
+
+if [ $# -gt 0 ]; then
+
+    case "$1" in
+
+    "build") compose_build ;;
+    "start-dev") start_dev ;;
+    "status") compose_status ;;
+    "stop") compose_down ;;
+    "redis-clean") redis_clean ;;
+    "logs") compose_logs $@ ;;
+    "artisan") execute_artisan $@ ;;
+    "composer") execute_composer $@ ;;
+    "npm") execute_npm $@ ;;
+    "test") execute_tests ;;
+    *) show_commands;;
+
+    esac
+
+else
+    show_commands
+fi
+
