@@ -1,0 +1,25 @@
+version: "3.9"
+
+networks:
+  traefik_network:
+    external: true
+
+services:
+
+  app-dev:
+    container_name: tarefeiro-app-dev
+    build:
+      context: .
+      dockerfile: docker/node/Dockerfile
+    image: tarefeiro-app-dev
+    #user: $USERID
+    networks:
+      - traefik_network
+    volumes: 
+      - ./node_modules:/var/www/html/node_modules
+      - .:/var/www/html
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tarefeiro-app-dev.rule=Host(`app-tarefeiro.docker.dev`)"
+      - "traefik.http.services.tarefeiro-app-dev.loadbalancer.server.port=8080"
+      - "traefik.http.routers.tarefeiro-app-dev.tls=true"
