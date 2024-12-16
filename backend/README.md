@@ -45,6 +45,19 @@ https://api-tarefeiro.docker.dev/status
 }
 ```
 
+Execute a criação das tabelas:
+
+```bash
+sh dev artisan migrate
+```
+
+
+Verifique a criação da estrutura:
+
+```bash
+sh dev artisan migrate:status
+```
+
 ---
 
 ## 🗂️ Estrutura de Pastas

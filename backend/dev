@@ -39,7 +39,7 @@ compose_up_dev () {
     echo "$ICON Iniciando os containers em modo Dev..."
     echo
     check_env_exists
-    docker-compose up -d nginx api 
+    docker-compose up -d nginx api traefik postgresql10
     execute_composer_install
 }
 

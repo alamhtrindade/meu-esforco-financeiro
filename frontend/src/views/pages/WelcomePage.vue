@@ -199,8 +199,6 @@ export default {
 
           this.tabela.items = tasks;
           this.tabela.semDados = tasks.length === 0;
-        } else {
-          this.tabela.erroTabela = true;
         }
       } catch (error) {
         this.tabela.erroTabela = true;
