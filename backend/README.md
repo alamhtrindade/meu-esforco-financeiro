@@ -55,9 +55,13 @@ sh dev start-dev
 
 
 
----
+
 Crie uma nova database no mysql chamada meu_esforco e reinicie os containeres
----
+
+```bash
+sh dev start-dev
+```
+
 
 
 
