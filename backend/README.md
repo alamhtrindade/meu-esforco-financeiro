@@ -24,10 +24,6 @@ Antes de iniciar, configure o arquivo de hosts do seu sistema para registrar a U
    127.0.0.1       api-meu-esforco-financeiro.docker.dev
    ```
 
----
-Crie uma nova database no mysql chamada meu_esforco
----
-
 ### Arquivo .env
 Copie para o arquivo .env as configurações do .env.example e
 adicione as configurações de banco:
@@ -56,6 +52,14 @@ Na raiz do backend, execute os comandos abaixo:
 sh dev build
 sh dev start-dev
 ```
+
+
+
+---
+Crie uma nova database no mysql chamada meu_esforco e reinicie os containeres
+---
+
+
 
 Verifique se o serviço está ativo acessando o endpoint de status através do postman/insomia:
 
