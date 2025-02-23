@@ -29,12 +29,18 @@ Copie para o arquivo .env as configurações do .env.example e
 adicione as configurações de banco:
 
 
-##CONEXAO BANCO
+***CONEXAO BANCO***
+
 DB_CONNECTION=mysql
+
 DB_HOST=meu-esforco-financeiro_mysql
+
 DB_PORT=3306
+
 DB_DATABASE=meu_esforco
+
 DB_USERNAME=mysqluser
+
 DB_PASSWORD=mysqlpassword
 
 ---
