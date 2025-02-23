@@ -36,13 +36,13 @@ Antes de subir a aplicação, leve em consideração as seguintes orientações:
 - Execute o processo de build do backend conforme descrito no `README.md` da pasta correspondente.
 
 #### **Frontend**
-- Após finalizar o build do backend, realize o build do frontend seguindo as instruções do `README.md` na pasta apropriada.
+- Após finalizar o build do backend, siga as instruções do `README.md` na pasta apropriada.
 
 ---
 
 ### **Execução**
-- Suba o contêiner do backend antes de iniciar o contêiner do frontend.  
-- Após o backend estar ativo, inicialize o contêiner do frontend.
+- Suba o contêiner do backend antes de iniciar o frontend.  
+- Após o backend estar ativo, inicialize o frontend.
 
 ---
 
