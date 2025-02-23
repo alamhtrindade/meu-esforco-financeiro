@@ -12,7 +12,7 @@ Ideal para quem busca saber quanto de sua renda mensal está comprometida.
 Na raiz do projeto frontend, execute os comandos abaixo:
 
 ```bash
-npm install
+npm install --legacy-peer-deps
 npm run dev
 ```
 
