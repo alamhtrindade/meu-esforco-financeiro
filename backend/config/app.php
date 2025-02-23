@@ -55,7 +55,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'https://api-tarefeiro.docker.dev'),
+    'url' => env('APP_URL', 'https://api-meu-esforco-financeiro.docker.dev'),
 
     'asset_url' => env('ASSET_URL'),
 
@@ -172,8 +172,9 @@ return [
          * Domain Service Providers...
          */
         \App\Domain\Geral\Configuracao\Providers\ConfiguracaoProvider::class,
-        \App\Domain\Task\Task\Providers\TaskProvider::class,
-        \App\Domain\Task\Status\Providers\StatusProvider::class
+        \App\Domain\Person\Providers\PersonProvider::class,
+        \App\Domain\Income\Providers\IncomeProvider::class,
+        \App\Domain\Expense\Providers\ExpenseProvider::class,
         
     ])->toArray(),
 

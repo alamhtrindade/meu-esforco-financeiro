@@ -1,0 +1,1 @@
+ALTER TABLE Person ADD CONSTRAINT unique_nif UNIQUE (nif);

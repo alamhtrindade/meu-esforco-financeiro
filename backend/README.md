@@ -1,6 +1,7 @@
-# 📌 Tarefeiro
+# 📌 MEU ESFORÇO FINANCEIRO
 
-Tarefeiro é um gerenciador de tarefas simples e intuitivo, projetado para ajudar você a organizar, priorizar e concluir atividades do dia a dia. Ideal para quem busca praticidade e foco na gestão de tarefas.
+Meu esforço financeiro é um simulador de esforço financeiro simples e intuitivo, projeto para calcular a taxa de esforço financeiro familiar, baseado nas rendas e despesas.
+Ideal para quem busca saber quanto de sua renda mensal está comprometida.
 
 ## 🚀 Iniciando o Projeto
 
@@ -20,7 +21,7 @@ Antes de iniciar, configure o arquivo de hosts do seu sistema para registrar a U
 2. Adicione a URL base da API:
 
    ```
-   127.0.0.1       api-tarefeiro.docker.dev
+   127.0.0.1       api-meu-esforco-financeiro.docker.dev
    ```
 
 ### Arquivo .env
@@ -29,12 +30,12 @@ adicione as configurações de banco:
 
 
 ***CONEXAO BANCO***
-DB_CONNECTION=pgsql
-DB_HOST=postgresql10
-DB_PORT=5432
-DB_DATABASE=tarefeiro_database_local
-DB_USERNAME=postgresql
-DB_PASSWORD=ABC1de2FG3H
+DB_CONNECTION=mysql
+DB_HOST=meu-esforco-financeiro_mysql
+DB_PORT=3306
+DB_DATABASE=meu_esforco
+DB_USERNAME=mysqluser
+DB_PASSWORD=mysqlpassword
 
 ---
 
@@ -49,7 +50,7 @@ sh dev start-dev
 Verifique se o serviço está ativo acessando o endpoint de status através do postman/insomia:
 
 ```
-https://api-tarefeiro.docker.dev/status
+https://api-meu-esforco-financeiro.docker.dev/status
 ```
 
 **Resposta esperada:**
@@ -88,76 +89,64 @@ sh dev artisan test
 
 ---
 
-## 🗂️ Estrutura de Pastas
-
-O projeto segue o padrão **Domain-Driven Design (DDD)** para organizar responsabilidades e domínios.
-
-```bash
-app/Domain/
-├── Shared/               # Componentes compartilhados entre domínios
-│   ├── ValueObjects/     # Ex.: Email, CPF
-│   ├── Exceptions/       # Exceções genéricas
-│   └── Enums/            # Enumeradores (StatusEnum, PriorityEnum)
-└── Task/                 # Contexto principal: Tarefas
-    ├── Entities/         # Entidades do domínio (ex.: Task.php)
-    ├── Contracts/        # Interfaces (ex.: Repositórios e Validações)
-    ├── Repositories/     # Implementações de persistência
-    ├── Services/         # Regras de negócio reutilizáveis
-    └── Exceptions/       # Exceções específicas do contexto
-```
-
----
-
 ## 📚 Endpoints da API
 
-### Tarefa
-Abaixo estão os endpoints para gerenciar tarefas:
+### Person
+Abaixo estão os endpoints para gerenciar Pessoas:
 
-#### 📖 Consultar Tarefa
-- **Método:** `GET`
-- **URL:** `https://api-tarefeiro.docker.dev/task/read/{idTask}`
-
-#### ➕ Criar Tarefa
+#### ➕ Cadastrar Pessoa
 - **Método:** `POST`
-- **URL:** `https://api-tarefeiro.docker.dev/task/create`
+- **URL:** `https://api-meu-esforco-financeiro.docker.dev/person/create`
 
 **Exemplo de Payload:**
-
 ```json
 {
-   "name": "Levar carro ao mecânico",
-   "description": "Precisa consertar os freios",
-   "category": 1,
-   "priority": 1,
-   "startDate": "2024/12/16",
-   "endDate": "2024/12/16",
-   "startTime": "07:00:00",
-   "endTime": "07:30:00"
+   "nif": "257880828",
+   "name": "Benício Nathan Leonardo Castro"
 }
 ```
 
-#### ✏️ Atualizar Tarefa
-- **Método:** `PUT`
-- **URL:** `https://api-tarefeiro.docker.dev/task/update`
+#### 📖 Listar Pessoas
+
+Listar todas as pessoas, e todas as transações
+- **Método:** `GET`
+- **URL:** `https://api-meu-esforco-financeiro.docker.dev/person/read`
+  
+Listar uma pessao e transações de um determinado mês
+- **Método:** `GET`
+- **URL:** `https://api-meu-esforco-financeiro.docker.dev/person/read/{idPessoa}/{mes}`
+
+
+### Income
+Abaixo estão os endpoints para gerenciar entradas:
+
+#### ➕ Cadastrar Entradas
+- **Método:** `POST`
+- **URL:** `https://api-meu-esforco-financeiro.docker.dev/income/create`
 
 **Exemplo de Payload:**
-
 ```json
 {
-   "name": "Levar carro ao mecânico",
-   "description": "Precisa consertar os freios",
-   "category": 1,
-   "priority": 1,
-   "startDate": "2024/12/16",
-   "endDate": "2024/12/16",
-   "startTime": "07:00:00",
-   "endTime": "07:30:00"
+   "id_person": "1",
+   "value": 128.98,
+   "date_income": "2025-02-11"
 }
 ```
 
-#### 🗑️ Deletar Tarefa
-- **Método:** `DELETE`
-- **URL:** `https://api-tarefeiro.docker.dev/task/delete/{idTask}`
+#### ➕ Cadastrar Despesas
+- **Método:** `POST`
+- **URL:** `https://api-meu-esforco-financeiro.docker.dev/expense/create`
+
+**Exemplo de Payload:**
+```json
+{
+   "id_person": "1",
+   "value": 128.98,
+   "date_expense": "2025-02-11"
+}
+```
+
+
 
 ---
 
@@ -165,7 +154,6 @@ Abaixo estão os endpoints para gerenciar tarefas:
 
 - **PHP** com arquitetura DDD
 - **Docker** e **Docker Compose**
-- **Carbon** para manipulação de datas
-- **Symfony** para exceções e respostas HTTP
+- **MySql** para persistência dos dados
 
 ---

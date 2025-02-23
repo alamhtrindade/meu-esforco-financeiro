@@ -4,7 +4,6 @@
 FROM composer:2 AS vendor
 
 COPY ./database/ database/
-
 COPY ./composer.json ./composer.lock ./
 
 RUN composer install \
@@ -36,7 +35,6 @@ COPY ./docker/php/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY ./docker/php/local/xdebug.sh /tmp/
 COPY ./docker/php/local/xdebug.ini /tmp/
 
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git  \
     curl  \
@@ -44,7 +42,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
-    libpq-dev \
     unzip \
     supervisor \
     openssl \
@@ -58,8 +55,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pcntl \
     gd \
     zip \
-    && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
-    && docker-php-ext-install pdo pdo_pgsql pgsql \
+    pdo \
+    pdo_mysql \
+    mysqli \
     && pecl install redis && docker-php-ext-enable redis \
     && mkdir /run/php \
     && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \

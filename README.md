@@ -1,7 +1,9 @@
-# 📌 Tarefeiro App
+# 📌 MEU ESFORÇO FINANCEIRO
 
-Um aplicativo para gestão de tarefas, com instruções detalhadas para configuração e execução da API 
-e do Frontend disponíveis nos respectivos arquivos `README.md`.
+
+Meu esforço financeiro é um simulador de esforço financeiro simples e intuitivo, projeto para calcular a taxa de esforço financeiro familiar, baseado nas rendas e despesas.
+Ideal para quem busca saber quanto de sua renda mensal está comprometida.
+As instruções detalhadas para configuração e execução da API e do Frontend disponíveis nos respectivos arquivos `README.md`.
 
 ---
 
@@ -61,6 +63,13 @@ chmod +x mkcert-v*-linux-amd64
 sudo mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert
 mkcert -install
 ```
+
+Instale o certificado:
+
+```bash
+mkcert -cert-file ./docker/certs/cert.pem -key-file ./docker/certs/key.pem "api-meu-esforco-financeiro.docker.dev" "app-meu-esforco-financeiro.docker.dev"
+```
+
 Faça o build novamente.
 Suba os contêineres novamente
 

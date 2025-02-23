@@ -1,6 +1,6 @@
-CREATE DATABASE tarefeiro_database_local;
+CREATE DATABASE meu-esforco-financeiro_database_local;
 
-\c tarefeiro_database_local
+\c meu-esforco-financeiro_database_local
 
 CREATE TABLE public.failed_jobs (
     id bigserial NOT NULL,

@@ -1,7 +1,6 @@
 version: "3.9"
 
 networks:
-  # Corrigido para 'networks'
   traefik_network:
     driver: bridge
     name: traefik_network
@@ -9,22 +8,21 @@ networks:
       com.docker.network.bridge.host_binding_ipv4: 127.0.0.1
 
 volumes:
-  postgresql10:
-
+  mysql_data:
 
 services:
   api:
-    container_name: api-tarefeiro
+    container_name: api-meu-esforco-financeiro
     build:
       context: .
       dockerfile: docker/php/Dockerfile
       args:
         BUILD_APP_ENV: "local"
-    image: api-tarefeiro
+    image: api-meu-esforco-financeiro
     environment:
       XDG_CONFIG_HOME: "/var/www/html/.tinker"
     env_file: .env
-    user: "${USERID:-1000}" # Define um valor padrão (1000) caso USERID não seja setada
+    user: "${USERID:-1000}"
     volumes:
       - .:/var/www/html:cached
       - ./docker/php/local/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
@@ -37,67 +35,65 @@ services:
     build:
       context: .
       dockerfile: docker/nginx/Dockerfile
-    container_name: tarefeiro-nginx
+    container_name: meu-esforco-financeiro-nginx
     volumes:
       - ./public:/var/www/html/public:cached
     depends_on:
       - api
     networks:
       - traefik_network
-    entrypoint: sh -c "sed -i 's/api:9000/api-tarefeiro:9000/g' /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+    entrypoint: sh -c "sed -i 's/api:9000/api-meu-esforco-financeiro:9000/g' /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api-tarefeiro.rule=Host(`api-tarefeiro.docker.dev`)"
-      - "traefik.http.services.api-tarefeiro.loadbalancer.server.port=8080"
-      - "traefik.http.routers.api-tarefeiro.tls=true"
+      - "traefik.http.routers.api-meu-esforco-financeiro.rule=Host(`api-meu-esforco-financeiro.docker.dev`)"
+      - "traefik.http.services.api-meu-esforco-financeiro.loadbalancer.server.port=8080"
+      - "traefik.http.routers.api-meu-esforco-financeiro.tls=true"
     ports:
       - 8800:8800
 
-  postgresql10:
-    image: postgres:10
-    container_name: tarefeiro_postgresql10
+  mysql:
+    image: mysql:latest
+    container_name: meu-esforco-financeiro_mysql
     restart: always
     volumes:
-      - postgresql10:/var/lib/postgresql/data
-      - ./init-scripts:/docker-entrypoint-initdb.d/
+      - mysql_data:/var/lib/mysql
     networks:
-      - traefik_network # Corrigido para usar o nome da rede correta
+      - traefik_network
     environment:
-      POSTGRES_PASSWORD: ABC1de2FG3H
-      POSTGRES_USER: postgresql
+      MYSQL_ROOT_PASSWORD: ABC1de2FG3H
+      MYSQL_DATABASE: meu_esforco
+      MYSQL_USER: mysqluser
+      MYSQL_PASSWORD: mysqlpassword
       TZ: America/Sao_Paulo
     ports:
-      - 5432:5432
+      - 3306:3306
 
   traefik:
     image: traefik:v2.4
-    container_name: tarefeiro_traefik
+    container_name: meu-esforco-financeiro_traefik
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
     networks:
-      - traefik_network # Corrigido para usar o nome da rede correta
+      - traefik_network
     ports:
-      # Web
       - 80:80
       - 443:443
     volumes:
-      - ./certs:/certs 
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      # Map the static conf into the container
-      - ./docker/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-      # Map the dynamic conf into the container
-      - ./docker/traefik/config.yml:/etc/traefik/config.yml:ro
-      # Map the certificats into the container
       - ./docker/certs:/etc/certs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./docker/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./docker/traefik/config.yml:/etc/traefik/config.yml:ro
+      - ./docker/traefik/acme.json:/etc/traefik/acme.json
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`api-tarefeiro.docker.dev`)"
+      - "traefik.http.routers.api.rule=Host(`api-meu-esforco-financeiro.docker.dev`)"
       - "traefik.http.services.api.loadbalancer.server.port=9000"
     command:
       - --entrypoints.web.address=:80
-      - --entrypoints.web-secure.address=:443
+      - --entrypoints.websecure.address=:443
       - --certificatesresolvers.localcerts.acme.tlschallenge=true
-      - --certificatesresolvers.localcerts.acme.storage=/acme.json
-      - --entrypoints.web-secure.http.tls.certificates[0].certFile=/certs/app-tarefeiro.docker.dev.pem
-      - --entrypoints.web-secure.http.tls.certificates[0].keyFile=/certs/app-tarefeiro.docker.dev-key.pem
+      - --certificatesresolvers.localcerts.acme.email=seu-email@example.com
+      - --certificatesresolvers.localcerts.acme.storage=/etc/traefik/acme.json
+      - --entrypoints.websecure.http.tls.certificates[0].certFile=/etc/certs/api-meu-esforco-financeiro.docker.dev.pem
+      - --entrypoints.websecure.http.tls.certificates[0].keyFile=/etc/certs/api-meu-esforco-financeiro.docker.dev-key.pem
