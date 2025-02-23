@@ -30,7 +30,6 @@ function generateChartData(transactions, month, year) {
       const dayIndex = transactionDate.getDate() - 1;
       const value = parseFloat(transaction.value) || 0;
       
-      // Se for despesa, converte o valor para negativo
       const adjustedValue = transaction.date_expense ? -value : value;
 
       cumulativeValue += adjustedValue;
