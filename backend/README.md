@@ -98,14 +98,6 @@ sh dev artisan migrate:status
 
 ---
 
-### Testes unitários
-
-Para executar os testes unitários:
-```bash
-sh dev artisan test
-```
-
----
 
 ## 📚 Endpoints da API
 
