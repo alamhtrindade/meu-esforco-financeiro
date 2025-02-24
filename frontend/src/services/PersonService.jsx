@@ -15,7 +15,7 @@ export async function createPerson( name, nif ) {
       return data;
     } catch (error) {
       console.error("Erro ao salvar os dados", error);
-      return error;
+      throw error;
     }
 };
 
@@ -26,7 +26,7 @@ export async function getAll() {
       return data;
     } catch (error) {
       console.error("Erro ao buscar os clientes:", error);
-      return error;
+      throw error;
     }
 };
 
@@ -37,7 +37,7 @@ export async function getByPersonAndMonth(idPerson, month) {
     return data;
   } catch (error) {
     console.error("Erro ao buscar os clientes:", error);
-    return error;
+    throw error;
   }
 };
 
@@ -63,7 +63,7 @@ export async function createIncome(data) {
     return res;
   } catch (error) {
     console.error("Erro ao criar uma entrada. Tente novamente mais tarde.", error);
-    return error;
+    throw error;
   }
 };
 
@@ -89,6 +89,6 @@ export async function createExpense(data) {
     return res;
   } catch (error) {
     console.error("Erro ao criar uma entrada. Tente novamente mais tarde.", error);
-    return error;
+    throw error;
   }
 } 

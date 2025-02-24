@@ -6,6 +6,8 @@ import { Grid, Container, Typography, TextField, Button } from '@mui/material';
 import CardActivitie from "../../components/CardActivitie/CardActivitie";
 import { CircularProgress, Box } from "@mui/material";
 import { getAll, getByPersonAndMonth, createPerson } from '../../services/PersonService';
+import FormCreateClient from "../../components/FormCreateClient/FormCreateClient";
+import Alert from "../../components/Alert/Alert";
 
 const style = {
     position: 'absolute',
@@ -34,9 +36,23 @@ const Home = () => {
     const [loading, setLoading] = useState(true);
     const [modifiedMonth, setModifiedMonth] = useState(false);
     const [reload, setReload] = useState(false);
-
     const [newClientNif, setNewClientNif] = useState("");
     const [newClientName, setNewClientName] = useState("");
+    const [open, setOpen] = useState(false);
+    const [typeError, setTypeError] = useState("");
+    const [descError, setDescError] = useState("");
+
+    const setModalErro = (typeError, error) => {
+        setTypeError(typeError)
+        setDescError(error)
+        setOpen(true)
+
+        setTimeout(() => {
+            setOpen(false)
+            setTypeError("")
+            setDescError("")
+        }, 3000);
+    }
 
     useEffect(() => {
         getAll()
@@ -46,6 +62,7 @@ const Home = () => {
             })
             .catch(error => {
                 console.error("Erro ao buscar clientes:", error);
+                setModalErro("Ocorreu um erro", "Erro ao buscar dados na API")
             })
             .finally(() => {
                 setLoading(false);
@@ -157,6 +174,7 @@ const Home = () => {
                     })
                     .catch(error => {
                         console.error("Erro ao buscar clientes:", error);
+                        setModalErro("Ocorreu um erro", "ocorreu um erro ao buscar clientes na API")
                     })
                     .finally(() => {
                         setLoading(false);
@@ -168,7 +186,10 @@ const Home = () => {
     const handleSaveNewClient = () => {
 
         try {
-            
+            if(!newClientName || !newClientNif){
+                setModalErro("Campos Obrigatórios", 'Preencha todos os campos antes de continuar');
+                return;
+            }
             createPerson( newClientName, newClientNif)
                 .then(response => {
                     const data = response;
@@ -188,15 +209,23 @@ const Home = () => {
                 })
                 .catch(error => {
                     console.error("Erro ao cadastrar cliente:", error);
+                    setModalErro("Cadastro de Clientes", "Verifique se o NIF já possui cadastro.")
                 });
         } catch (error) {
             console.error("Erro ao enviar requisição:", error);
+            setModalErro("Erro na Requisição", "Algo saiu mal! Tente novamente mais tarde.")
         }
-
     };
 
     return (
         <>
+            <Alert
+                title={typeError}
+                value={descError}
+                open={open}
+                setOpen={setOpen}
+            />
+
             {loading ? (
                 <Box display="flex" flexDirection="column" alignItems="center" mt={4}>
                     <CircularProgress size={50} color="primary" />
@@ -205,43 +234,14 @@ const Home = () => {
             ) : (
                 <>
                     { dataClients.length === 0 ? (
-                        <>
-                            <span> Nenhum Cliente Cadastrado </span>
-                            <Box sx={style}>
-                                <Typography variant="h6" component="h2" gutterBottom sx={{ textAlign: "center", fontWeight: "bold" }}>
-                                    Cadastrar Novo Cliente
-                                </Typography>
-                                
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12}>
-                                        <TextField 
-                                            fullWidth 
-                                            label="Número NIF" 
-                                            variant="outlined" 
-                                            value={newClientNif}
-                                            onChange={(e) => setNewClientNif(e.target.value)}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <TextField 
-                                            fullWidth 
-                                            label="Nome Completo" 
-                                            variant="outlined" 
-                                            value={newClientName}
-                                            onChange={(e) => setNewClientName(e.target.value)}
-                                        />
-                                    </Grid>
-                                </Grid>
-
-                                <Grid container spacing={2} sx={{ mt: 3, justifyContent: "flex-end" }}>
-                                    <Grid item>
-                                        <Button variant="contained" color="success" onClick={handleSaveNewClient}>
-                                            Salvar
-                                        </Button>
-                                    </Grid>
-                                </Grid>
-                            </Box>
-                        </>
+                        <FormCreateClient 
+                            nif={newClientNif}
+                            setNif={setNewClientNif}
+                            name={newClientName}
+                            setName={setNewClientName}
+                            handleClose={() => {}}
+                            handleNewClient={handleSaveNewClient}
+                        />
                     ) : (
                         <>
                             <FormClients

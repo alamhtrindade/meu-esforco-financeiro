@@ -8,6 +8,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { createIncome, createExpense } from '../../services/PersonService';
 import { format } from "date-fns";
+import Alert from '../Alert/Alert';
 
 const style = {
   position: 'absolute',
@@ -32,6 +33,21 @@ const FormCreateActivity = ({
     const [value, setValue] = useState("");
     const [dateActivity, setDateActivity] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(false);
+    const [typeError, setTypeError] = useState("");
+    const [descError, setDescError] = useState("");
+
+    const setModalErro = (typeError, error) => {
+        setTypeError(typeError)
+        setDescError(error)
+        setError(true)
+
+        setTimeout(() => {
+            setError(false)
+            setTypeError("")
+            setDescError("")
+        }, 3000);
+    }
     
     const handleClose = () => {
         setReload(true);
@@ -43,7 +59,8 @@ const FormCreateActivity = ({
         setLoading(true);
 
         if(!value || !dateActivity){
-            alert("os campos são obrigatórios");
+            setModalErro("Preencha todos os campos", "Todos os campos são obrigatórios.");
+            setLoading(false)
             return;
         }
 
@@ -63,7 +80,8 @@ const FormCreateActivity = ({
                     setDateActivity("")
                 })
                 .catch(error => {
-                    console.error("Erro ao buscar clientes:", error);
+                    console.error("Erro ao cadastrar Entradas:", error);
+                    setModalErro("Ocorreu um erro", "Os valores devem ser numéricos com 2 casas decimais")
                 })
                 .finally(() => {
                     setLoading(false);
@@ -75,7 +93,8 @@ const FormCreateActivity = ({
                     setDateActivity("")
                 })
                 .catch(error => {
-                    console.error("Erro ao buscar clientes:", error);
+                    console.error("Erro ao cadastrar Saídas:", error);
+                    setModalErro("Ocorreu um erro", "Os valores devem ser numéricos com 2 casas decimais")
                 })
                 .finally(() => {
                     setLoading(false);
@@ -84,54 +103,62 @@ const FormCreateActivity = ({
     };
 
     return (
-        <Modal open={open} onClose={handleClose}>
-            <Box sx={style}>
+        <>
+            <Alert
+                title={typeError}
+                value={descError}
+                open={error}
+                setOpen={setError}
+            />
+            <Modal open={open} onClose={handleClose}>
+                <Box sx={style}>
                 
-                <Typography variant="h6" component="h2" gutterBottom sx={{ textAlign: "center", fontWeight: "bold" }}>
-                    {type === "credit" ? "Cadastrar Rendimento" : "Cadastrar Despesa"}
-                </Typography>
-                <Grid container spacing={2}>
-                    <Grid item xs={7}>
-                        <TextField 
-                            fullWidth 
-                            label="Valor" 
-                            variant="outlined" 
-                            value={value}
-                            onChange={(e) => setValue(e.target.value)}
-                        />
-                    </Grid>
-                    <Grid item xs={5}>
-                        <LocalizationProvider dateAdapter={AdapterDateFns}>
-                            <DatePicker
-                                label="Data"
-                                value={dateActivity}
-                                onChange={(newValue) => setDateActivity(newValue)}
-                                renderInput={(params) => <TextField {...params} fullWidth />}
+                    <Typography variant="h6" component="h2" gutterBottom sx={{ textAlign: "center", fontWeight: "bold" }}>
+                        {type === "credit" ? "Cadastrar Rendimento" : "Cadastrar Despesa"}
+                    </Typography>
+                    <Grid container spacing={2}>
+                        <Grid item xs={7}>
+                            <TextField 
+                                fullWidth 
+                                label="Valor" 
+                                variant="outlined" 
+                                value={value}
+                                onChange={(e) => setValue(e.target.value)}
                             />
-                        </LocalizationProvider>
+                        </Grid>
+                        <Grid item xs={5}>
+                            <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                <DatePicker
+                                    label="Data"
+                                    value={dateActivity}
+                                    onChange={(newValue) => setDateActivity(newValue)}
+                                    renderInput={(params) => <TextField {...params} fullWidth />}
+                                />
+                            </LocalizationProvider>
+                        </Grid>
                     </Grid>
-                </Grid>
 
-                <Grid container spacing={2} sx={{ mt: 3, justifyContent: "flex-end" }}>
-                    <Grid item>
-                        <Button variant="outlined" color="error" onClick={handleClose} disabled={loading}>
-                            Cancelar
-                        </Button>
+                    <Grid container spacing={2} sx={{ mt: 3, justifyContent: "flex-end" }}>
+                        <Grid item>
+                            <Button variant="outlined" color="error" onClick={handleClose} disabled={loading}>
+                                Cancelar
+                            </Button>
+                        </Grid>
+                        <Grid item>
+                            <Button 
+                                variant="contained" 
+                                color="success" 
+                                onClick={handleSubmitActivity} 
+                                disabled={loading} 
+                                startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+                            >
+                                {loading ? "Salvando..." : "Salvar"}
+                            </Button>
+                        </Grid>
                     </Grid>
-                    <Grid item>
-                        <Button 
-                            variant="contained" 
-                            color="success" 
-                            onClick={handleSubmitActivity} 
-                            disabled={loading} 
-                            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
-                        >
-                            {loading ? "Salvando..." : "Salvar"}
-                        </Button>
-                    </Grid>
-                </Grid>
-            </Box>
-        </Modal>
+                </Box>
+            </Modal>
+        </>
     );
 };
 

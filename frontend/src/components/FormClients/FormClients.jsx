@@ -6,7 +6,7 @@ import Select from '@mui/material/Select';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import AddIcon from '@mui/icons-material/Add';
-import FormCreateClient from "../FormCreateClient/FormCreateClient";
+import ModalCreateClient from "../ModalCreateClient/ModalCreateClient";
 
 const MOUNTHS = [
     { id: 1, mounth: 'Janeiro'},
@@ -48,7 +48,7 @@ const FormClients = ({
     }
     return (
         <>
-            <FormCreateClient
+            <ModalCreateClient
                 clients={clients}
                 setClients={setClients}
                 setSelectedClient={setSelectedClient}
