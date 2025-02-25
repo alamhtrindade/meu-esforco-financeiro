@@ -23,4 +23,6 @@ final class SystemMessagesEnum extends Enum
 
     const SUCCESS = 'Sucesso';
     const DELETE_NOT_POSSIBLE = 'Não é possível deletar este registro.';
+    
+    const NIF_ARE_REGISTERED = 'O NIF escolhido já está cadastrado.';
 }

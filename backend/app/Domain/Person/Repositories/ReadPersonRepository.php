@@ -97,4 +97,15 @@ class ReadPersonRepository implements ReadPersonRepositoryInterface
         ])
         ->first();
     }
+
+    public function readPersonByNif(
+        int $nif
+    ): ?Person
+    {
+        return  $this->model->where(
+                    $this->model::campoCompleto($this->model::NIF),
+                    $nif
+                )
+                ->first();
+    }
 }
